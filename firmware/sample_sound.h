@@ -6,9 +6,10 @@
 #include <string>
 #include <assert.h>
 #include <unordered_map>
+#include "command_parser.h"
 #include "net_interface.h"
 #include "hardware_interface.h"
-#include "command_parser.h"
+#include "histogram.h"
 
 #ifdef GTEST_FOUND
 #include <gtest/gtest_prod.h>
@@ -64,72 +65,6 @@ class StateArg
     int intArg;
     Dir dirArg;
   };
-};
-
-#ifdef gone
-class TimingParams
-{
-  public:
-
-  TimingParams( 
-    int msEpochBetweenCommandChecksRHS    = 100,        // 100 ms
-    int maxStepsBetweenChecksRHS          = 50,
-    unsigned msInactivityToSleepRHS       = 5*60*1000,  // 5 minutes
-    int msEpochForSleepCommandChecksRHS   = 1*1000,     // 1 seconds
-    int msToPowerStepperRHS               = 1*1000,     // 1 second
-    unsigned microSecondStepPauseRHS      = 1000        // 1 ms
-  ) :
-    msEpochBetweenCommandChecks{ msEpochBetweenCommandChecksRHS },
-    maxStepsBetweenChecks{ maxStepsBetweenChecksRHS },
-    msInactivityToSleep{ msInactivityToSleepRHS },
-    msEpochForSleepCommandChecks{ msEpochForSleepCommandChecksRHS },
-    msToPowerStepper{ msToPowerStepperRHS},
-    microSecondStepPause{ microSecondStepPauseRHS }
-  {
-  }
-
-  int getEpochBetweenCommandChecks() const 
-  { 
-    return msEpochBetweenCommandChecks; 
-  }
-  int getMaxStepsBetweenChecks() const 
-  { 
-    return maxStepsBetweenChecks; 
-  }
-  unsigned getInactivityToSleep() const 
-  { 
-    return msInactivityToSleep; 
-  }
-  int getEpochForSleepCommandChecks() const 
-  { 
-    return msEpochForSleepCommandChecks; 
-  }
-  int getTimeToPowerStepper() const 
-  { 
-    return msToPowerStepper;
-  }
-  int getMicroSecondStepPause() const 
-  { 
-    return microSecondStepPause;
-  }
-
-  private:
-  int msEpochBetweenCommandChecks;
-  int maxStepsBetweenChecks;
-  unsigned msInactivityToSleep;
-  int msEpochForSleepCommandChecks;
-  int msToPowerStepper;
-  unsigned microSecondStepPause;
-};
-#endif
-
-enum class Build
-{
-  LOW_POWER_HYPERSTAR_FOCUSER,
-  LOW_POWER_HYPERSTAR_FOCUSER_MICROSTEP,
-  TRADITIONAL_FOCUSER,
-  UNIT_TEST_BUILD_HYPERSTAR,
-  UNIT_TEST_TRADITIONAL_FOCUSER
 };
 
 ///
@@ -300,6 +235,8 @@ class SSound
   
   unsigned min_1sec_sample;
   unsigned max_1sec_sample;
+
+  Histogram< unsigned int, 10> samples{ 200, 300 }; 
 
   /// @brief SSound uptime in MS
   unsigned int time;
