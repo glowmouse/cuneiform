@@ -28,3 +28,9 @@ HWI::PinState HardwareESP8266::DigitalRead( Pin pin)
   return PinState::DUMMY_INACTIVE;
 }
 
+unsigned int HardwareESP8266::AnalogRead( Pin pin)
+{
+  return analogRead( A0 );
+}
+
+
