@@ -37,7 +37,7 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/firmware )
 
 set (FIRMWARE_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/firmware/command_parser.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/firmware/focuser_state.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/firmware/sample_sound.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/firmware/hardware_interface.cpp
 )
 

@@ -3,10 +3,10 @@
 #include <memory>
 #include <unistd.h>
 
-#include "focuser_state.h"
+#include "sample_sound.h"
 #include "hardware_interface.h"
 
-std::unique_ptr<FS::Focuser> focuser;
+std::unique_ptr<FS::SSound> focuser;
 
 class NetInterfaceSim: public NetInterface {
   public:
@@ -94,13 +94,11 @@ void setup() {
   std::unique_ptr<NetInterface> wifi( new NetInterfaceSim );
   std::unique_ptr<HWI> hardware( new HWISim );
   std::unique_ptr<DebugInterface> debug( new DebugInterfaceSim );
-  FS::BuildParams params( FS::Build::LOW_POWER_HYPERSTAR_FOCUSER );
-  focuser = std::unique_ptr<FS::Focuser>(
-     new FS::Focuser( 
+  focuser = std::unique_ptr<FS::SSound>(
+     new FS::SSound( 
         std::move(wifi), 
         std::move(hardware),
-				std::move(debug),
-        params )
+				std::move(debug))
   );
 }
 

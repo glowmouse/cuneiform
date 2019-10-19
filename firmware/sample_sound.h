@@ -15,7 +15,7 @@
 #endif
 
 ///
-/// @brief Focuser Namespace
+/// @brief SSound Namespace
 /// 
 /// This is a collection of code that has to do with the focuser's
 /// state.  The code in this namespace 
@@ -27,10 +27,10 @@
 /// \b Concepts
 ///
 /// - <b> Basic Flow: </b>
-///       Callers run the focuser by repeatly calling Focuser::loop; this 
-///       is simular to the basic Arduino loop.  Focuser::loop returns the 
+///       Callers run the focuser by repeatly calling SSound::loop; this 
+///       is simular to the basic Arduino loop.  SSound::loop returns the 
 ///       amount of time (in micro-seconds) it would like the caller to wait 
-///       before invoking Focuser::loop again.
+///       before invoking SSound::loop again.
 /// - <b> Net Interface: </b>
 ///       The Net Interface (NetInterface) is where the focuser gets input 
 ///       and sends output to.  Normally that's the WIFI connection to the 
@@ -49,13 +49,13 @@
 ///       "Move the focuser to this position".  The list of valid commands 
 ///       is declared in CommandParser::Command
 /// - <b> Invidivual State: </b>
-///       The Focuser is most similar to a state machine.  Focuser::loop
+///       The SSound is most similar to a state machine.  SSound::loop
 ///       just runs the handler for the current state. For example, if the
 ///       current state is "moving to a new position" the focuser might
 ///       figure out where it is right now, what direction it has to move,
 ///       and how many steps it needs to take to get to that positon.
 /// - <b> State Stack: </b>
-///       The Focuser actually has a stack of states.  The stack is useful
+///       The SSound actually has a stack of states.  The stack is useful
 ///       because it's sometimes easier to describe a complex operation
 ///       using simpler operations.  i.e., you can move the stepper motor
 ///       one step by running State::STEPPER_ACTIVE_AND_WAIT and then
@@ -65,7 +65,7 @@
 ///
 namespace FS {
 
-/// @brief Focuser's State Enum
+/// @brief SSound's State Enum
 ///
 /// @see FS Namespace for high level description.
 ///
@@ -174,37 +174,6 @@ enum class Build
   UNIT_TEST_TRADITIONAL_FOCUSER
 };
 
-
-class BuildParams {
-  public:
-
-  using BuildParamMap = const std::unordered_map<Build, BuildParams, EnumHash >;
-
-  BuildParams() = delete;
-
-  BuildParams( 
-    TimingParams timingParamsRHS,
-    bool focuserHasHomeRHS,
-    unsigned int maxAbsPosRHS
-  ) : 
-    timingParams{ timingParamsRHS },
-    focuserHasHome{ focuserHasHomeRHS },
-    maxAbsPos { maxAbsPosRHS }
-  {
-  }
-  BuildParams( Build buildType )
-  {
-    *this = builds.at( buildType );
-  } 
-
-  TimingParams timingParams;
-  bool focuserHasHome;
-  unsigned int maxAbsPos;
-  static BuildParamMap builds;
-
-  private:
-};
-
 ///
 /// @brief Stack of FS:States.
 ///
@@ -278,14 +247,14 @@ class StateStack {
   std::vector< CommandPacket > stack;
 };
 
-/// @brief Main Focuser Class
+/// @brief Main SSound Class
 ///
-/// The Focuser class has two main jobs:
+/// The SSound class has two main jobs:
 ///
 /// 1. It accepts new commands from a network interface
 /// 2. Over time, it manipulates a hardware interface to implement the commands
 ///
-/// At construction time the Focuser is provided three interfaces - an
+/// At construction time the SSound is provided three interfaces - an
 /// interface to the network (i.e., a Wifi Connection), an interface to the 
 /// the hardware (i.e., the pins in a Micro-Controller) an interface for
 /// debug logging, and the focuser's hardware parameters
@@ -296,32 +265,31 @@ class StateStack {
 ///
 /// the main event loop could look something like the following:
 ///
-/// Focuser( std::move(net), std::move(hardware), std::move(debug), params );
+/// SSound( std::move(net), std::move(hardware), std::move(debug), params );
 /// for ( ;; ) {
-///   unsigned int delay = Focuser.loop();
+///   unsigned int delay = SSound.loop();
 ///   delayMicroseconds( delay );   
 /// }
 /// 
-class Focuser 
+class SSound 
 {
   public:
  
-  /// @brief Focuser State Constructor
+  /// @brief SSound State Constructor
   ///
   /// @param[in] netArg       - Interface to the network
   /// @param[in] hardwareArg  - Interface to the Hardware
   /// @param[in] debugArg     - Interface to the debug logger.
   /// @param[in] params       - Hardware Parameters 
   ///
-  Focuser( 
+  SSound( 
 		std::unique_ptr<NetInterface> netArg,
 		std::unique_ptr<HWI> hardwareArg,
-		std::unique_ptr<DebugInterface> debugArg,
-    const BuildParams params
+		std::unique_ptr<DebugInterface> debugArg
 	);
 
   ///
-  /// @brief Update the Focuser's State
+  /// @brief Update the SSound's State
   ///
   /// @return The amount of time the caller should wait (in microseconds)
   ///         before calling loop again.
@@ -338,18 +306,18 @@ class Focuser
 #endif
 
   static const std::unordered_map<CommandParser::Command,
-    void (Focuser::*)( CommandParser::CommandPacket),EnumHash> 
+    void (SSound::*)( CommandParser::CommandPacket),EnumHash> 
     commandImpl;
 
-  using ptrToMember = unsigned int ( Focuser::*) ( void );
+  using ptrToMember = unsigned int ( SSound::*) ( void );
   static const std::unordered_map< State, ptrToMember, EnumHash > stateImpl;
 
   /// @brief Deleted copy constructor
-  Focuser( const Focuser& other ) = delete;
+  SSound( const SSound& other ) = delete;
   /// @brief Deleted default constructor
-  Focuser() = delete;
+  SSound() = delete;
   /// @brief Deleted assignment operator
-  Focuser& operator=( const Focuser& ) = delete;
+  SSound& operator=( const SSound& ) = delete;
   
   StateStack stateStack;
 
@@ -373,8 +341,6 @@ class Focuser
   std::unique_ptr<HWI> hardware;
   std::unique_ptr<DebugInterface> debugLog;
   
-  const BuildParams buildParams;
-
   /// @brief What direction are we going? 
   ///
   /// FORWARD = counting up.
@@ -396,10 +362,10 @@ class Focuser
   /// @brief Is the focuser synched to a "known good" position
   bool isSynched;
 
-  /// @brief Focuser uptime in MS
+  /// @brief SSound uptime in MS
   unsigned int time;
 
-  /// @brief For computing time in Focuser::loop
+  /// @brief For computing time in SSound::loop
   unsigned int uSecRemainder;
 
   /// @brief Time the last command that could have caused an interrupt happened
