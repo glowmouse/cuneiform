@@ -48,6 +48,7 @@ class HWI
 
   virtual void DigitalWrite( Pin pin, PinState state ) = 0;
   virtual void PinMode( Pin pin, PinIOMode mode ) = 0;
+  virtual unsigned AnalogRead( Pin pin ) = 0;
   virtual PinState DigitalRead( Pin pin) = 0;
 };
 

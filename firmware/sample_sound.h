@@ -17,52 +17,6 @@
 ///
 /// @brief SSound Namespace
 /// 
-/// This is a collection of code that has to do with the focuser's
-/// state.  The code in this namespace 
-///
-/// - Initializes the hardware
-/// - Moves the stepper motor
-/// - Accepts input from the network
-///
-/// \b Concepts
-///
-/// - <b> Basic Flow: </b>
-///       Callers run the focuser by repeatly calling SSound::loop; this 
-///       is simular to the basic Arduino loop.  SSound::loop returns the 
-///       amount of time (in micro-seconds) it would like the caller to wait 
-///       before invoking SSound::loop again.
-/// - <b> Net Interface: </b>
-///       The Net Interface (NetInterface) is where the focuser gets input 
-///       and sends output to.  Normally that's the WIFI connection to the 
-///       host computer, but there's a Mock Network Interface that's used 
-///       for testing.
-/// - <b> Hardware Interface: </b>
-///       The Hardware Interface (HWI) is how the focuser interacts with
-///       the actual hardware.  Normally this as the ESP8266 itself, but
-///       there's a Mock Hardware Interface that's used for testing.
-/// - <b> Debug Interface: </b>
-///       The Debug Interface (DebugInterface) can be used to send debug
-///       messages to a host computer.  It's a developer only interface.
-/// - <b> Commands: </b>
-///       A command is an instruction that comes from the the comes from the 
-///       the Net Interface.  i.e., "What is the focuser position",  
-///       "Move the focuser to this position".  The list of valid commands 
-///       is declared in CommandParser::Command
-/// - <b> Invidivual State: </b>
-///       The SSound is most similar to a state machine.  SSound::loop
-///       just runs the handler for the current state. For example, if the
-///       current state is "moving to a new position" the focuser might
-///       figure out where it is right now, what direction it has to move,
-///       and how many steps it needs to take to get to that positon.
-/// - <b> State Stack: </b>
-///       The SSound actually has a stack of states.  The stack is useful
-///       because it's sometimes easier to describe a complex operation
-///       using simpler operations.  i.e., you can move the stepper motor
-///       one step by running State::STEPPER_ACTIVE_AND_WAIT and then
-///       State::STEPPER_INACTIVE_AND_WAIT.  A move can be done by setting
-///       a direction using State::SET_DIR and then using State::DO_STEPS
-///       to take multiple steps.
-///
 namespace FS {
 
 /// @brief SSound's State Enum
@@ -73,6 +27,8 @@ enum class State
 {
   START_OF_STATES = 0,        ///< Start of States
   ACCEPT_COMMANDS = 0,        ///< Accepting commands from the net interface
+  SAMPLE_1SEC_SOUNDS,         ///< Get the max sound over 1 second
+  SAMPLE_1SEC_SOUNDS_COL,     ///< Collector state for SAMPLE_1SEC_SOUNDS
   ERROR_STATE,                ///< Error Errror Error
   END_OF_STATES               ///< End of States
 };
@@ -110,6 +66,7 @@ class StateArg
   };
 };
 
+#ifdef gone
 class TimingParams
 {
   public:
@@ -164,6 +121,7 @@ class TimingParams
   int msToPowerStepper;
   unsigned microSecondStepPause;
 };
+#endif
 
 enum class Build
 {
@@ -325,42 +283,23 @@ class SSound
 
   /// @brief Wait for commands from the network interface
   unsigned int stateAcceptCommands( void ); 
+  /// @brief Collect a sound sample. Exit when the time is past the state arg
+  unsigned int stateSample1SecCollector( void ); 
+  /// @brief Sample sound for 1 second, computing the maximum volume
+  unsigned int stateSample1Sec( void ); 
   /// @brief If we land in this state, complain a lot.
   unsigned int stateError( void );
 
   void doAbort( CommandParser::CommandPacket );
-  void doPStatus( CommandParser::CommandPacket );
-  void doMStatus( CommandParser::CommandPacket );
-  void doSStatus( CommandParser::CommandPacket );
-  void doFirmware( CommandParser::CommandPacket );
-  void doCaps( CommandParser::CommandPacket );
-  void doDebugOff( CommandParser::CommandPacket );
+  void doStatus( CommandParser::CommandPacket );
   void doError( CommandParser::CommandPacket );
 
   std::unique_ptr<NetInterface> net;
   std::unique_ptr<HWI> hardware;
   std::unique_ptr<DebugInterface> debugLog;
   
-  /// @brief What direction are we going? 
-  ///
-  /// FORWARD = counting up.
-  /// REVERSE = counting down.
-  ///
-  Dir dir;
-
-  enum class MotorState {
-    ON,
-    OFF
-  };
-
-  /// @brief Is the Stepper Motor On or Off. 
-  MotorState motorState;
-
-  /// @brief What is the focuser's position of record
-  int focuserPosition;
-
-  /// @brief Is the focuser synched to a "known good" position
-  bool isSynched;
+  unsigned min_1sec_sample;
+  unsigned max_1sec_sample;
 
   /// @brief SSound uptime in MS
   unsigned int time;

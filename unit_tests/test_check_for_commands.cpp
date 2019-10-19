@@ -37,15 +37,11 @@ TEST( COMMAND_PARSER, checkForCommands)
   NetMockSimpleTimed abort("abort");
   ASSERT_EQ( checkForCommands(dbgmock, abort), CommandPacket( Command::Abort));
 
-  NetMockSimpleTimed pstatus("PStatus");
-  ASSERT_EQ( checkForCommands(dbgmock, pstatus), CommandPacket( Command::PStatus ));
+  NetMockSimpleTimed status("Status");
+  ASSERT_EQ( checkForCommands(dbgmock, status), CommandPacket( Command::Status ));
 
-  NetMockSimpleTimed pstatus2("pStatus with training garbage");
-  ASSERT_EQ( checkForCommands(dbgmock, pstatus2), CommandPacket( Command::PStatus ));
-
-
-  NetMockSimpleTimed mstatus("mstatus");
-  ASSERT_EQ( checkForCommands(dbgmock, mstatus), CommandPacket( Command::MStatus ));
+  NetMockSimpleTimed status2("Status with training garbage");
+  ASSERT_EQ( checkForCommands(dbgmock, status2), CommandPacket( Command::Status ));
 }
 
 TEST( COMMAND_PARSER, testGot)

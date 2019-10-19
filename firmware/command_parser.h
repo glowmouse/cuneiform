@@ -14,12 +14,7 @@ namespace CommandParser {
   enum class Command {
     StartOfCommands = 0,  ///<  Start of the command list
     Abort = 0,            ///<  Abort a move
-    PStatus,              ///<  Return Position to Caller
-    MStatus,              ///<  Return the Mode (i.e., "moving", "homing")
-    SStatus,              ///<  Is the focuser synced (i.e., homed)
-    Firmware,             ///<  Get the firmware version
-    Caps,                 ///<  Get build specific focuser capabilities
-    DebugOff,             ///<  Disable debug interface.
+    Status,               ///<  Return current status
     NoCommand,            ///<  No command was specified.
     EndOfCommands         ///<  End of the comand list.
   };

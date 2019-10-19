@@ -68,6 +68,14 @@ class HWISim: public HWI
     std::cout << "DR " << HWI::pinNames.at(pin) << " returning HOME_INACTIVE";
     return HWI::PinState::DUMMY_INACTIVE;
   }
+  unsigned AnalogRead( Pin pin ) override
+  {
+    static unsigned int count = 0;
+    int count_pos = ((count / 2 ) & 0xfff ) / 16;   // Range 0 - 0xff
+    int count_amp = (count & 1) ? count_amp : -count_amp;
+
+    return 512 + count_amp;
+  }
 };
 
 class DebugInterfaceSim: public DebugInterface

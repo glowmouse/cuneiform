@@ -76,6 +76,8 @@ const std::unordered_map<State,unsigned int (SSound::*)( void ),EnumHash>
   SSound::stateImpl =
 {
   { State::ACCEPT_COMMANDS,           &SSound::stateAcceptCommands },
+  { State::SAMPLE_1SEC_SOUNDS_COL,    &SSound::stateSample1SecCollector},
+  { State::SAMPLE_1SEC_SOUNDS,        &SSound::stateSample1Sec},
   { State::ERROR_STATE,               &SSound::stateError }
 };
 
@@ -83,6 +85,8 @@ const std::unordered_map<State,unsigned int (SSound::*)( void ),EnumHash>
 const StateToString FS::stateNames =
 {
   { State::ACCEPT_COMMANDS,               "ACCEPTING_COMMANDS" },
+  { State::SAMPLE_1SEC_SOUNDS_COL,        "Collecting Samples" },
+  { State::SAMPLE_1SEC_SOUNDS,            "Collect 1 Sec of Samples"},
   { State::ERROR_STATE,                   "ERROR ERROR ERROR"  },
 };
 
@@ -92,12 +96,7 @@ const std::unordered_map<CommandParser::Command,
   SSound::commandImpl = 
 {
   { CommandParser::Command::Abort,      &SSound::doAbort },
-  { CommandParser::Command::PStatus,    &SSound::doPStatus },
-  { CommandParser::Command::MStatus,    &SSound::doMStatus },
-  { CommandParser::Command::SStatus,    &SSound::doSStatus },
-  { CommandParser::Command::Firmware,   &SSound::doFirmware},
-  { CommandParser::Command::Caps,       &SSound::doCaps},
-  { CommandParser::Command::DebugOff,   &SSound::doDebugOff},
+  { CommandParser::Command::Status,     &SSound::doStatus },
   { CommandParser::Command::NoCommand,  &SSound::doError },
 };
 
@@ -105,12 +104,7 @@ const std::unordered_map<CommandParser::Command,
 const CommandToBool FS::doesCommandInterrupt= 
 {
   { CommandParser::Command::Abort,         true   },
-  { CommandParser::Command::PStatus,       false  },
-  { CommandParser::Command::MStatus,       false  },
-  { CommandParser::Command::SStatus,       false  },
-  { CommandParser::Command::Firmware,      false  },
-  { CommandParser::Command::Caps,          false  },
-  { CommandParser::Command::DebugOff,      false  },
+  { CommandParser::Command::Status,        false  },
   { CommandParser::Command::NoCommand,     false  },
 };
 
@@ -137,57 +131,12 @@ void SSound::doAbort( CommandParser::CommandPacket cp )
   // Do nothing - command triggers a state interrupt.
 }
 
-void SSound::doPStatus( CommandParser::CommandPacket cp )
+void SSound::doStatus( CommandParser::CommandPacket cp )
 {
   (void) cp;
   DebugInterface& log = *debugLog;
-  log << "Processing pstatus request\n";
-  *net << "Position: " << focuserPosition << "\n";
-}
-
-void SSound::doMStatus( CommandParser::CommandPacket cp )
-{
-  (void) cp;
-  DebugInterface& log = *debugLog;
-
-  log << "Processing mstatus request\n";
-  *net << "State: " << stateNames.at(stateStack.topState()) << 
-                " " << stateStack.topArg() << "\n";
-}
-
-void SSound::doSStatus( CommandParser::CommandPacket cp )
-{
-  (void) cp;
-  DebugInterface& log = *debugLog;
-
-  log << "Processing sstatus request\n";
-  *net << "Synched: " << (isSynched ? "YES" : "NO" ) << "\n";
-}
-
-void SSound::doFirmware( CommandParser::CommandPacket cp )
-{
-  (void) cp;
-  DebugInterface& log = *debugLog;
-
-  log << "Processing firmware request\n";
-  *net << "Firmware: 1.0\n";
-}
-
-void SSound::doCaps( CommandParser::CommandPacket cp )
-{
-  (void) cp;
-  DebugInterface& log = *debugLog;
-
-  log << "Processing capabilities request\n";
-}
-
-void SSound::doDebugOff( CommandParser::CommandPacket cp )
-{
-  (void) cp;
-  DebugInterface& log = *debugLog;
-
-  log << "Disabling low level debug output";
-  log.disable();
+  log << "Processing status request\n";
+  *net << "Status : TODO\n";
 }
 
 void SSound::doError( CommandParser::CommandPacket cp )
@@ -220,6 +169,27 @@ unsigned int SSound::stateAcceptCommands()
   const int mSecToNextEpoch = timeBetweenChecks - ( time % timeBetweenChecks );
 
   return mSecToNextEpoch * 1000;
+}
+
+unsigned int SSound::stateSample1SecCollector()
+{
+  const unsigned endTime = (unsigned) stateStack.topArg().getInt();
+  if ( endTime > time ) {
+    stateStack.pop();
+  }
+  unsigned curSound = hardware->AnalogRead( HWI::Pin::MICROPHONE );
+  min_1sec_sample = std::min( curSound, min_1sec_sample );
+  max_1sec_sample = std::max( curSound, min_1sec_sample );
+  return 1000;
+}
+
+unsigned int SSound::stateSample1Sec()
+{
+  unsigned curSound = hardware->AnalogRead( HWI::Pin::MICROPHONE );
+  min_1sec_sample = curSound;
+  max_1sec_sample = curSound;
+  stateStack.push( State::SAMPLE_1SEC_SOUNDS_COL, time  );
+  return 0;
 }
 
 unsigned int SSound::stateError()
