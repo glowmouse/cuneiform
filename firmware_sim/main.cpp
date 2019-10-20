@@ -71,10 +71,11 @@ class HWISim: public HWI
   unsigned AnalogRead( Pin pin ) override
   {
     static unsigned int count = 0;
-    int count_pos = ((count / 2 ) & 0xfff ) / 16;   // Range 0 - 0xff
+    int count_pos = ((count / 2 ) & 0xfff );   // Range 0 - 0xff
     int count_amp = (count & 1) ? count_amp : -count_amp;
+    count++;
 
-    return 512 + count_amp;
+    return 200 + count_amp;
   }
 };
 
@@ -94,8 +95,8 @@ class DebugInterfaceSim: public DebugInterface
   }
 };
 
-void loop() {
-  focuser->loop();
+unsigned int loop() {
+  return focuser->loop();
 }
 
 void setup() {
@@ -115,7 +116,8 @@ int main(int argc, char* argv[])
   setup();
   for ( ;; ) 
   {
-    loop();
+    unsigned int delay = loop();
+    usleep( delay );
   }
 }
 

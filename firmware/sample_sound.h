@@ -30,14 +30,11 @@ enum class State
   ACCEPT_COMMANDS = 0,        ///< Accepting commands from the net interface
   SAMPLE_1SEC_SOUNDS,         ///< Get the max sound over 1 second
   SAMPLE_1SEC_SOUNDS_COL,     ///< Collector state for SAMPLE_1SEC_SOUNDS
+  SAMPLE_1HR,                 ///< Get the max sound over 1 second
+  SAMPLE_1HR_COL,             ///< Collector for Sample_1HR
+  DO_PAUSE,                   ///< Pause.  Check for commands every 1s
   ERROR_STATE,                ///< Error Errror Error
   END_OF_STATES               ///< End of States
-};
-
-/// @brief What direction is the focuser going?
-enum class Dir {
-  FORWARD,    ///< Go Forward
-  REVERSE     ///< Go Backward
 };
 
 class StateArg
@@ -46,16 +43,13 @@ class StateArg
 
   enum class Type {
     NONE,
-    INT,
-    DIR
+    INT
   };
 
   StateArg() : type{ Type::NONE}  {}
   StateArg( int i ) : type{Type::INT}, intArg{ i } {}
-  StateArg( Dir d ) : type{Type::DIR}, dirArg{ d } {}
   Type getType() { return type; }
   int getInt() { assert( type==Type::INT ); return intArg; }
-  Dir getDir() { assert( type==Type::DIR ); return dirArg; }
 
   private:
 
@@ -63,7 +57,6 @@ class StateArg
 
   union {
     int intArg;
-    Dir dirArg;
   };
 };
 
@@ -194,8 +187,8 @@ class SSound
 #ifdef GTEST_FOUND
   // So we can unit test the consistency of the class's constant - static 
   // data without exposing it to everybody
-  FRIEND_TEST(FOCUSER_STATE, allStatesHaveImplementations);
-  FRIEND_TEST(FOCUSER_STATE, allCommandsHaveImplementations);
+  FRIEND_TEST(SSOUND_ENUM, allStatesHaveImplementations );
+  FRIEND_TEST(SSOUND_ENUM, allCommandsHaveImplementations);
 #endif
 
   static const std::unordered_map<CommandParser::Command,
@@ -222,6 +215,12 @@ class SSound
   unsigned int stateSample1SecCollector( void ); 
   /// @brief Sample sound for 1 second, computing the maximum volume
   unsigned int stateSample1Sec( void ); 
+  /// @brief Sample sound for 1 hour, computing a histogram of max volumes
+  unsigned int stateSample1Hr( void ); 
+  /// @brief Collector for 1 hour histogram sample
+  unsigned int stateSample1HrCollector( void ); 
+  /// @brief Pause (but accept commands)
+  unsigned int stateDoingPause( void ); 
   /// @brief If we land in this state, complain a lot.
   unsigned int stateError( void );
 

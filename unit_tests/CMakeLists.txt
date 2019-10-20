@@ -1,6 +1,6 @@
 ENABLE_TESTING()
 
-SET(UNIT_TESTS test_check_for_commands test_device test_histogram )
+SET(UNIT_TESTS test_check_for_commands test_device test_histogram test_enums )
 
 foreach( TEST ${UNIT_TESTS} )
 

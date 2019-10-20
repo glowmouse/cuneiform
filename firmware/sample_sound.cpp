@@ -78,6 +78,9 @@ const std::unordered_map<State,unsigned int (SSound::*)( void ),EnumHash>
   { State::ACCEPT_COMMANDS,           &SSound::stateAcceptCommands },
   { State::SAMPLE_1SEC_SOUNDS_COL,    &SSound::stateSample1SecCollector},
   { State::SAMPLE_1SEC_SOUNDS,        &SSound::stateSample1Sec},
+  { State::SAMPLE_1HR,                &SSound::stateSample1Hr},
+  { State::SAMPLE_1HR_COL,            &SSound::stateSample1HrCollector},
+  { State::DO_PAUSE,                  &SSound::stateDoingPause},
   { State::ERROR_STATE,               &SSound::stateError }
 };
 
@@ -87,6 +90,9 @@ const StateToString FS::stateNames =
   { State::ACCEPT_COMMANDS,               "ACCEPTING_COMMANDS" },
   { State::SAMPLE_1SEC_SOUNDS_COL,        "Collecting Samples" },
   { State::SAMPLE_1SEC_SOUNDS,            "Collect 1 Sec of Samples"},
+  { State::SAMPLE_1HR,                    "1Hr Sound Histogram" },
+  { State::SAMPLE_1HR_COL,                "Collecting 1Hr Histogram Samples"},
+  { State::DO_PAUSE,                      "Collect Sound Histogram Idle"},
   { State::ERROR_STATE,                   "ERROR ERROR ERROR"  },
 };
 
@@ -136,7 +142,16 @@ void SSound::doStatus( CommandParser::CommandPacket cp )
   (void) cp;
   DebugInterface& log = *debugLog;
   log << "Processing status request\n";
-  *net << "Status : TODO\n";
+  *net << "Status :\n";
+  Histogram< unsigned int, 10> :: array_t histoout;
+  samples.get_histogram( histoout );
+  int count=0;
+  *net << "min 1sec sample " << min_1sec_sample << "\n";
+  *net << "max 1sec sample " << max_1sec_sample << "\n";
+  for ( auto i : histoout ) {
+    *net << count << " -> " << i << "\n";
+    count++;
+  } 
 }
 
 void SSound::doError( CommandParser::CommandPacket cp )
@@ -162,20 +177,18 @@ unsigned int SSound::stateAcceptCommands()
     processCommand( cp );
     return 0;
   }
-  const unsigned int timeSinceLastInterrupt = 
-      time - timeLastInterruptingCommandOccured;
 
-  const int timeBetweenChecks = 1000000;
-  const int mSecToNextEpoch = timeBetweenChecks - ( time % timeBetweenChecks );
+  stateStack.push( State::SAMPLE_1HR, 0 );
 
-  return mSecToNextEpoch * 1000;
+  return 1000*1000;
 }
 
 unsigned int SSound::stateSample1SecCollector()
 {
   const unsigned endTime = (unsigned) stateStack.topArg().getInt();
-  if ( endTime > time ) {
+  if ( endTime < time ) {
     stateStack.pop();
+    return 0;
   }
   unsigned curSound = hardware->AnalogRead( HWI::Pin::MICROPHONE );
   min_1sec_sample = std::min( curSound, min_1sec_sample );
@@ -188,7 +201,52 @@ unsigned int SSound::stateSample1Sec()
   unsigned curSound = hardware->AnalogRead( HWI::Pin::MICROPHONE );
   min_1sec_sample = curSound;
   max_1sec_sample = curSound;
-  stateStack.push( State::SAMPLE_1SEC_SOUNDS_COL, time  );
+  stateStack.pop();
+  stateStack.push( State::SAMPLE_1SEC_SOUNDS_COL, time + 1000 );
+  return 0;
+}
+
+unsigned int SSound::stateSample1HrCollector()
+{
+  // We pushed a 1 second sample on the stack when we started, so there's
+  // guaranteed data that can be read.
+  samples.insert( max_1sec_sample - min_1sec_sample );
+
+  // Are we done?
+  const unsigned endTime = (unsigned) stateStack.topArg().getInt();
+  if ( endTime < time ) {
+    stateStack.pop();
+    return 0;
+  }
+  stateStack.push( State::SAMPLE_1SEC_SOUNDS, 0);
+  stateStack.push( State::DO_PAUSE, time + 1000 * 3 );
+  return 0;
+}
+
+unsigned int SSound::stateDoingPause()
+{
+  const unsigned endTime = (unsigned) stateStack.topArg().getInt();
+  if ( endTime < time ) {
+    stateStack.pop();
+    return 0;
+  }
+
+  DebugInterface& debug= *debugLog;
+  auto cp = CommandParser::checkForCommands( debug, *net );
+  if ( cp.command != CommandParser::Command::NoCommand )
+  {
+    processCommand( cp );
+    return 0;
+  }
+
+  return 1000*1000;
+}
+
+unsigned int SSound::stateSample1Hr()
+{
+  samples.reset();
+  stateStack.push( State::SAMPLE_1HR_COL, time + 1000 * 60 * 60 );
+  stateStack.push( State::SAMPLE_1SEC_SOUNDS, time + 1000 * 60 * 60 );
   return 0;
 }
 
