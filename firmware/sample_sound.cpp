@@ -143,13 +143,18 @@ void SSound::doStatus( CommandParser::CommandPacket cp )
   DebugInterface& log = *debugLog;
   log << "Processing status request\n";
   *net << "Status :\n";
-  Histogram< unsigned int, 10> :: array_t histoout;
+  histogram_t::array_t histoout;
   samples.get_histogram( histoout );
   int count=0;
   *net << "min 1sec sample " << min_1sec_sample << "\n";
   *net << "max 1sec sample " << max_1sec_sample << "\n";
   for ( auto i : histoout ) {
-    *net << count << " -> " << i << "\n";
+    const char *extra_padding = ( count < 10 ) ? " " : "";
+    *net << count << extra_padding << " -> ";
+    for ( int c = 0; c < i; ++c ) {
+      *net << "x";
+    }
+    *net << "\n";
     count++;
   } 
 }
@@ -245,7 +250,7 @@ unsigned int SSound::stateDoingPause()
 unsigned int SSound::stateSample1Hr()
 {
   samples.reset();
-  stateStack.push( State::SAMPLE_1HR_COL, time + 1000 * 60 * 60 );
+  stateStack.push( State::SAMPLE_1HR_COL, time + 1000 * 60 * 60 * 24 );
   stateStack.push( State::SAMPLE_1SEC_SOUNDS, time + 1000 * 60 * 60 );
   return 0;
 }

@@ -35,6 +35,23 @@ TEST( HISTOGRAM, should_work_for_uints_2 )
   ASSERT_EQ( golden, actual );
 }
 
+/// @brief Low Resolution
+TEST( HISTOGRAM, low_resolution )
+{
+  using TestH = Histogram< unsigned int, 10>;
+  TestH h( 0, 19 );
+
+  for ( int i = 0; i <= 19; ++i )
+  {
+    h.insert( i );
+  }
+
+  TestH::array_t golden = { 10, 10, 10, 10, 10, 10, 10, 10, 10, 10 };
+  TestH::array_t actual;
+  h.get_histogram( actual ); 
+  ASSERT_EQ( golden, actual );
+}
+
 /// @brief float test
 TEST( HISTOGRAM, should_work_for_floats )
 {

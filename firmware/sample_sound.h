@@ -235,7 +235,8 @@ class SSound
   unsigned min_1sec_sample;
   unsigned max_1sec_sample;
 
-  Histogram< unsigned int, 10> samples{ 200, 300 }; 
+  using histogram_t = Histogram< unsigned int, 30>;
+  histogram_t samples{ 0, 59}; 
 
   /// @brief SSound uptime in MS
   unsigned int time;
