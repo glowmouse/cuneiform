@@ -103,6 +103,7 @@ const std::unordered_map<CommandParser::Command,
 {
   { CommandParser::Command::Abort,      &SSound::doAbort },
   { CommandParser::Command::Status,     &SSound::doStatus },
+  { CommandParser::Command::HReset,     &SSound::doHReset},
   { CommandParser::Command::NoCommand,  &SSound::doError },
 };
 
@@ -111,6 +112,7 @@ const CommandToBool FS::doesCommandInterrupt=
 {
   { CommandParser::Command::Abort,         true   },
   { CommandParser::Command::Status,        false  },
+  { CommandParser::Command::HReset,        false  },
   { CommandParser::Command::NoCommand,     false  },
 };
 
@@ -137,6 +139,11 @@ void SSound::doAbort( CommandParser::CommandPacket cp )
   // Do nothing - command triggers a state interrupt.
 }
 
+void SSound::doHReset( CommandParser::CommandPacket cp )
+{
+  samples.reset();
+}
+
 void SSound::doStatus( CommandParser::CommandPacket cp )
 {
   (void) cp;
@@ -148,9 +155,13 @@ void SSound::doStatus( CommandParser::CommandPacket cp )
   int count=0;
   *net << "min 1sec sample " << min_1sec_sample << "\n";
   *net << "max 1sec sample " << max_1sec_sample << "\n";
+  int total = 0;
   for ( auto i : histoout ) {
-    const char *extra_padding = ( count < 10 ) ? " " : "";
-    *net << count << extra_padding << " -> ";
+    total += i;
+    const char *count_padding = ( count < 10 ) ? "  " : " ";
+    const char *num_padding = ( i < 10 ) ? "   " : i == 100 ? " " : "  ";
+    const char *total_padding = ( total < 10 ) ? "  " : total == 100 ? "" : " ";
+    *net << count << count_padding << i << num_padding << total << total_padding << " -> ";
     for ( int c = 0; c < i; ++c ) {
       *net << "x";
     }

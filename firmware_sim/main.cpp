@@ -71,7 +71,7 @@ class HWISim: public HWI
   unsigned AnalogRead( Pin pin ) override
   {
     static unsigned int count = 0;
-    int count_pos = ((count / 2 ) & 0xfff )/16;   // Range 0 - 0xff
+    int count_pos = ((count / 2 ) & 0xfff )/256;   // Range 0 - 0xff
     int count_amp = (count & 1) ? count_pos : -count_pos ;
     count++;
 

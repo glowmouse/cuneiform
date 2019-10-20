@@ -226,6 +226,7 @@ class SSound
 
   void doAbort( CommandParser::CommandPacket );
   void doStatus( CommandParser::CommandPacket );
+  void doHReset( CommandParser::CommandPacket );
   void doError( CommandParser::CommandPacket );
 
   std::unique_ptr<NetInterface> net;

@@ -15,6 +15,7 @@ namespace CommandParser {
     StartOfCommands = 0,  ///<  Start of the command list
     Abort = 0,            ///<  Abort a move
     Status,               ///<  Return current status
+    HReset,               ///<  Hard Reset the current histogram
     NoCommand,            ///<  No command was specified.
     EndOfCommands         ///<  End of the comand list.
   };

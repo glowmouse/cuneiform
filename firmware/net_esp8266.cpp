@@ -112,7 +112,7 @@ void WifiConnectionEthernet::initConnection( WiFiServer &server )
   }
   m_connectedClient = server.available();
   m_connectedClient.setNoDelay( true );
-  (*this) << "# Bee Focuser is ready for commands\n"; 
+  (*this) << "# Cuneiform data logger is ready for commands\n"; 
 }
 
 bool WifiConnectionEthernet::getString( WifiDebugOstream &log, std::string& string )
