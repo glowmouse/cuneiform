@@ -16,7 +16,7 @@ unsigned int TimeManager::secondsSince1970()
   unsigned int msSinceDevStart = baseInterface->msSinceDeviceStart();
   baseInterfaceCheckForTimeSync( msSinceDevStart );
 
-  return queryTime - ( msSinceDevStart - timeQueriedAt ) / 1000;
+  return queryTime + ( msSinceDevStart - timeQueriedAt ) / 1000;
 }
 
 unsigned int TimeManager::msSinceDeviceStart()
