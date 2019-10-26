@@ -4,11 +4,12 @@
 #include "net_esp8266.h"
 #include "hardware_esp8266.h"
 #include "debug_esp8266.h"
+#include "action_manager.h"
 
-std::unique_ptr<FS::SSound> soundSampler;
+std::shared_ptr<ActionManager> action_manager;
 
 void loop() {
-  unsigned int pause = soundSampler->loop();
+  unsigned int pause = action_manager->loop();
   if ( pause != 0 )
   {
     int ms = pause / 1000;
@@ -19,13 +20,11 @@ void loop() {
 }
 
 void setup() {
-  std::unique_ptr<NetInterface> wifi( new WifiInterfaceEthernet );
-  std::unique_ptr<HWI> hardware( new HardwareESP8266 );
-  std::unique_ptr<DebugInterface> debug( new DebugESP8266 );
-  soundSampler = std::unique_ptr<FS::SSound>(
-     new FS::SSound( 
-        std::move(wifi), 
-        std::move(hardware),
-				std::move(debug) )
-  );
+  auto wifi      = std::make_shared<WifiInterfaceEthernet>();
+  auto hardware  = std::make_shared<HardwareESP8266>();
+  auto debug     = std::make_shared<DebugESP8266>();
+  auto sound     = std::make_shared<FS::SSound>( wifi, hardware, debug );
+
+  action_manager = std::make_shared<ActionManager>( wifi, hardware, debug );
+  action_manager->addAction( sound );
 }
