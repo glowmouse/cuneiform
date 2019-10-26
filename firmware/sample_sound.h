@@ -10,6 +10,7 @@
 #include "net_interface.h"
 #include "hardware_interface.h"
 #include "histogram.h"
+#include "time_interface.h"
 
 #ifdef GTEST_FOUND
 #include <gtest/gtest_prod.h>
@@ -173,7 +174,8 @@ class SSound : public ActionInterface
   SSound( 
 		std::shared_ptr<NetInterface> netArg,
 		std::shared_ptr<HWI> hardwareArg,
-		std::shared_ptr<DebugInterface> debugArg
+		std::shared_ptr<DebugInterface> debugArg,
+		std::shared_ptr<TimeInterface>timeArg 
 	);
 
   ///
@@ -236,6 +238,7 @@ class SSound : public ActionInterface
   std::shared_ptr<NetInterface> net;
   std::shared_ptr<HWI> hardware;
   std::shared_ptr<DebugInterface> debugLog;
+  std::shared_ptr<TimeInterface> timeMgr;
   
   unsigned min_1sec_sample;
   unsigned max_1sec_sample;

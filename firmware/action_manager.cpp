@@ -26,6 +26,7 @@ unsigned int ActionManager::loop()
   timeInUs = current.first;
   unsigned rescheduleAt = interfaces.at( current.second )->loop() + timeInUs;
   taskList.push( PriorityAndTaskSlot( rescheduleAt, current.second ));
+  //(*net) << "Ran " << interfaces.at( current.second )->debugName() << " new time " << rescheduleAt << "\n"; 
   return taskList.top().first - timeInUs;
 }
 

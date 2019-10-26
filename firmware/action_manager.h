@@ -32,7 +32,10 @@ class ActionManager : public ActionInterface {
 
   std::vector< std::shared_ptr< ActionInterface >> interfaces;
 
-  std::priority_queue< PriorityAndTaskSlot > taskList;
+  std::priority_queue< 
+    PriorityAndTaskSlot, 
+    std::vector<PriorityAndTaskSlot>, 
+    std::greater<PriorityAndTaskSlot> > taskList;
   unsigned long long timeInUs;
 };
 

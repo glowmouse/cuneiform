@@ -6,6 +6,7 @@
 #include "command_parser.h"
 #include "wifi_debug_ostream.h"
 #include "sample_sound.h"
+#include "time_manager.h"
 
 using namespace FS;
 
@@ -18,8 +19,9 @@ using namespace FS;
 SSound::SSound(
     std::shared_ptr<NetInterface> netArg,
     std::shared_ptr<HWI> hardwareArg,
-    std::shared_ptr<DebugInterface> debugArg
-) : net{ netArg }, hardware{ hardwareArg }, debugLog{ debugArg }
+    std::shared_ptr<DebugInterface> debugArg,
+    std::shared_ptr<TimeInterface> timeArg
+) : net{ netArg }, hardware{ hardwareArg }, debugLog{ debugArg }, timeMgr{ timeArg }
 {
   DebugInterface& dlog = *debugLog;
   dlog << "Bringing up net interface\n";
@@ -149,6 +151,12 @@ void SSound::doStatus( CommandParser::CommandPacket cp )
   histogram_t::array_t histoout;
   samples.get_histogram( histoout );
   int count=0;
+
+  static std::string timeAsString;
+  unsigned int secsSince1970 = timeMgr->secondsSince1970();
+  intTimeToString( timeAsString, secsSince1970 ); 
+
+  *net << "time " << timeAsString << "\n";
   *net << "min 1sec sample " << min_1sec_sample << "\n";
   *net << "max 1sec sample " << max_1sec_sample << "\n";
   int total = 0;

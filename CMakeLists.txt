@@ -40,6 +40,7 @@ set (FIRMWARE_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/firmware/sample_sound.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/firmware/hardware_interface.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/firmware/action_manager.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/firmware/time_manager.cpp
 )
 
 set (FIRMWARE_SIM_SOURCES ${FIRMWARE_SOURCES} )

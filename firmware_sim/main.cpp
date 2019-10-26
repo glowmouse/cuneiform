@@ -2,12 +2,31 @@
 #include <iostream>
 #include <memory>
 #include <unistd.h>
+#include <time.h>
 
 #include "sample_sound.h"
 #include "hardware_interface.h"
 #include "action_manager.h"
+#include "time_interface.h"
+#include "time_manager.h"
 
 std::shared_ptr<ActionManager> action_manager;
+
+class TimeInterfaceSim: public TimeInterface {
+  public:
+ 
+  virtual unsigned int secondsSince1970() override final {
+    return time(nullptr);
+  } 
+
+  virtual unsigned int msSinceDeviceStart() override final {
+    timespec t;
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t );
+    const unsigned int msFromS  = t.tv_sec * 1000;
+    const unsigned int msFromNs = t.tv_nsec / 1000000;
+    return msFromS + msFromNs; 
+  }
+};
 
 class NetInterfaceSim: public NetInterface {
   public:
@@ -104,13 +123,13 @@ void setup() {
   auto wifi      = std::make_shared<NetInterfaceSim>();
   auto hardware  = std::make_shared<HWISim>();
   auto debug     = std::make_shared<DebugInterfaceSim>();
-  //std::shared_ptr<NetInterface> make_shared()wifi( new NetInterfaceSim );
-  //std::shared_ptr<HWI> hardware( new HWISim );
-  //std::shared_ptr<DebugInterface> debug( new DebugInterfaceSim );
+  auto timeSim   = std::make_shared<TimeInterfaceSim>();
+  auto time      = std::make_shared<TimeManager>( timeSim );
 
-  auto sound     = std::make_shared<FS::SSound>( wifi, hardware, debug );
+  auto sound     = std::make_shared<FS::SSound>( wifi, hardware, debug, time );
   action_manager = std::make_shared<ActionManager>( wifi, hardware, debug );
   action_manager->addAction( sound );
+  action_manager->addAction( time );
 }
 
 int main(int argc, char* argv[])
