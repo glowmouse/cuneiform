@@ -5,8 +5,9 @@
 
 #include "sample_sound.h"
 #include "hardware_interface.h"
+#include "action_manager.h"
 
-std::unique_ptr<FS::SSound> focuser;
+std::shared_ptr<ActionManager> action_manager;
 
 class NetInterfaceSim: public NetInterface {
   public:
@@ -96,19 +97,20 @@ class DebugInterfaceSim: public DebugInterface
 };
 
 unsigned int loop() {
-  return focuser->loop();
+  return action_manager->loop();
 }
 
 void setup() {
-  std::unique_ptr<NetInterface> wifi( new NetInterfaceSim );
-  std::unique_ptr<HWI> hardware( new HWISim );
-  std::unique_ptr<DebugInterface> debug( new DebugInterfaceSim );
-  focuser = std::unique_ptr<FS::SSound>(
-     new FS::SSound( 
-        std::move(wifi), 
-        std::move(hardware),
-				std::move(debug))
-  );
+  auto wifi      = std::make_shared<NetInterfaceSim>();
+  auto hardware  = std::make_shared<HWISim>();
+  auto debug     = std::make_shared<DebugInterfaceSim>();
+  //std::shared_ptr<NetInterface> make_shared()wifi( new NetInterfaceSim );
+  //std::shared_ptr<HWI> hardware( new HWISim );
+  //std::shared_ptr<DebugInterface> debug( new DebugInterfaceSim );
+
+  auto sound     = std::make_shared<FS::SSound>( wifi, hardware, debug );
+  action_manager = std::make_shared<ActionManager>( wifi, hardware, debug );
+  action_manager->addAction( sound );
 }
 
 int main(int argc, char* argv[])

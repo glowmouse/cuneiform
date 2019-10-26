@@ -15,6 +15,8 @@
 #include <gtest/gtest_prod.h>
 #endif
 
+#include "action_interface.h"
+
 ///
 /// @brief SSound Namespace
 /// 
@@ -157,7 +159,7 @@ class StateStack {
 ///   delayMicroseconds( delay );   
 /// }
 /// 
-class SSound 
+class SSound : public ActionInterface
 {
   public:
  
@@ -169,9 +171,9 @@ class SSound
   /// @param[in] params       - Hardware Parameters 
   ///
   SSound( 
-		std::unique_ptr<NetInterface> netArg,
-		std::unique_ptr<HWI> hardwareArg,
-		std::unique_ptr<DebugInterface> debugArg
+		std::shared_ptr<NetInterface> netArg,
+		std::shared_ptr<HWI> hardwareArg,
+		std::shared_ptr<DebugInterface> debugArg
 	);
 
   ///
@@ -180,7 +182,9 @@ class SSound
   /// @return The amount of time the caller should wait (in microseconds)
   ///         before calling loop again.
   ///
-  unsigned int loop();
+  virtual unsigned int loop() override final;
+
+  virtual const char* debugName() override final { return "SSound"; } 
 
   private:
 
@@ -229,9 +233,9 @@ class SSound
   void doHReset( CommandParser::CommandPacket );
   void doError( CommandParser::CommandPacket );
 
-  std::unique_ptr<NetInterface> net;
-  std::unique_ptr<HWI> hardware;
-  std::unique_ptr<DebugInterface> debugLog;
+  std::shared_ptr<NetInterface> net;
+  std::shared_ptr<HWI> hardware;
+  std::shared_ptr<DebugInterface> debugLog;
   
   unsigned min_1sec_sample;
   unsigned max_1sec_sample;

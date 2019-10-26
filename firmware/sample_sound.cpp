@@ -16,15 +16,11 @@ using namespace FS;
 /////////////////////////////////////////////////////////////////////////
 
 SSound::SSound(
-    std::unique_ptr<NetInterface> netArg,
-    std::unique_ptr<HWI> hardwareArg,
-    std::unique_ptr<DebugInterface> debugArg
-)
+    std::shared_ptr<NetInterface> netArg,
+    std::shared_ptr<HWI> hardwareArg,
+    std::shared_ptr<DebugInterface> debugArg
+) : net{ netArg }, hardware{ hardwareArg }, debugLog{ debugArg }
 {
-  std::swap( net, netArg );
-  std::swap( hardware, hardwareArg );
-  std::swap( debugLog, debugArg );
-  
   DebugInterface& dlog = *debugLog;
   dlog << "Bringing up net interface\n";
   
