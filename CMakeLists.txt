@@ -43,7 +43,8 @@ set (FIRMWARE_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/firmware/time_manager.cpp
 )
 
-set (FIRMWARE_SIM_SOURCES ${FIRMWARE_SOURCES} )
+add_library( firmware_lib STATIC ${FIRMWARE_SOURCES} )
+
 LIST(APPEND FIRMWARE_SIM_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/firmware_sim/main.cpp)
 
 # Testing
@@ -58,6 +59,6 @@ ELSE()
   MESSAGE (STATUS  "GTEST not found, skipping unit tests")
 ENDIF (GTEST_FOUND)
 
-add_executable(firware_sim ${FIRMWARE_SIM_SOURCES})
-
+add_executable(firmware_sim ${FIRMWARE_SIM_SOURCES})
+target_link_libraries(firmware_sim firmware_lib )
 
