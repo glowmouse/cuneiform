@@ -244,7 +244,16 @@ class SSound : public ActionInterface
   unsigned max_1sec_sample;
 
   using histogram_t = Histogram< unsigned int, 30>;
+
+  unsigned int sampleStartTime;
   histogram_t samples{ 0, 59}; 
+
+  std::array< unsigned short, 10000> rawSamples;
+  size_t curSample;
+
+  unsigned int absSamples;
+  unsigned int absTotal;
+  unsigned int absMean;
 
   /// @brief SSound uptime in MS
   unsigned int time;

@@ -153,12 +153,19 @@ void SSound::doStatus( CommandParser::CommandPacket cp )
   int count=0;
 
   static std::string timeAsString;
-  unsigned int secsSince1970 = timeMgr->secondsSince1970();
-  intTimeToString( timeAsString, secsSince1970 ); 
 
-  *net << "time " << timeAsString << "\n";
+  intTimeToString( timeAsString, sampleStartTime );
+  *net << "start time " << timeAsString << "\n";
+  intTimeToString( timeAsString, timeMgr->secondsSince1970()); 
+  *net << "cur time   " << timeAsString << "\n";
+
   *net << "min 1sec sample " << min_1sec_sample << "\n";
   *net << "max 1sec sample " << max_1sec_sample << "\n";
+  *net << "histogram_slot  " << (max_1sec_sample - min_1sec_sample ) / 2 << "\n";
+  *net << "absSamples      " << absSamples << "\n"; 
+  *net << "absTotal        " << absTotal << "\n"; 
+  *net << "absmean         " << absMean << "\n"; 
+  *net << "absAvg          " << absTotal/ absSamples << "\n"; 
   int total = 0;
   for ( auto i : histoout ) {
     total += i;
@@ -171,7 +178,16 @@ void SSound::doStatus( CommandParser::CommandPacket cp )
     }
     *net << "\n";
     count++;
-  } 
+  }
+#ifdef DEBUG 
+  for ( auto i = 0; i < absSamples; ++i )
+  {
+    for ( int j = 0; j < rawSamples[i]-absMean+40; ++j ) {
+      *net << " ";
+    }
+    *net << "x\n";
+  }
+#endif
 }
 
 void SSound::doError( CommandParser::CommandPacket cp )
@@ -206,18 +222,25 @@ unsigned int SSound::stateAcceptCommands()
 unsigned int SSound::stateSample1SecCollector()
 {
   const unsigned endTime = (unsigned) stateStack.topArg().getInt();
-  if ( endTime < time ) {
+  if ( endTime < time ||
+    curSample >= rawSamples.size() )
+  {
     stateStack.pop();
     return 0;
   }
+
   unsigned curSound = hardware->AnalogRead( HWI::Pin::MICROPHONE );
+  rawSamples[ curSample ] =  curSound;
+  curSample++;
+
   min_1sec_sample = std::min( curSound, min_1sec_sample );
-  max_1sec_sample = std::max( curSound, min_1sec_sample );
-  return 1000;
+  max_1sec_sample = std::max( curSound, max_1sec_sample );
+  return 100;
 }
 
 unsigned int SSound::stateSample1Sec()
 {
+  curSample = 0;
   unsigned curSound = hardware->AnalogRead( HWI::Pin::MICROPHONE );
   min_1sec_sample = curSound;
   max_1sec_sample = curSound;
@@ -228,6 +251,25 @@ unsigned int SSound::stateSample1Sec()
 
 unsigned int SSound::stateSample1HrCollector()
 {
+  unsigned int mean = 0;
+  for ( size_t i = 0; i < curSample; ++i )
+  {
+    mean += (unsigned int ) rawSamples[ i ];
+  }
+  mean/= curSample;
+
+  unsigned int abs_total = 0;
+  for ( size_t i = 0; i < curSample; ++i )
+  {
+    int abs = ((int) mean) - ((int) rawSamples[i]);
+    abs = abs < 0 ? -abs : abs;
+    abs_total += abs;
+  }
+
+  absSamples = curSample;
+  absTotal = abs_total;
+  absMean = mean;
+
   // We pushed a 1 second sample on the stack when we started, so there's
   // guaranteed data that can be read.
   samples.insert( max_1sec_sample - min_1sec_sample );
@@ -265,6 +307,7 @@ unsigned int SSound::stateDoingPause()
 unsigned int SSound::stateSample1Hr()
 {
   samples.reset();
+  sampleStartTime = timeMgr->secondsSince1970();
   stateStack.push( State::SAMPLE_1HR_COL, time + 1000 * 60 * 60 * 24 );
   stateStack.push( State::SAMPLE_1SEC_SOUNDS, time + 1000 * 60 * 60 );
   return 0;
