@@ -2,7 +2,9 @@
 #define __NetInterface_H__
 
 #include <string>
+#include <string>
 #include <memory>
+#include "action_interface.h"
 #include "hardware_interface.h"
 #include "debug_interface.h"
 
@@ -13,7 +15,7 @@ class WifiDebugOstream;
 ///
 /// This class's one job is to provide an interface to the client.
 ///
-class NetInterface {
+class NetInterface: public ActionInterface {
   public:
 
   struct category : public beefocus_tag {};
@@ -25,8 +27,6 @@ class NetInterface {
   virtual ~NetInterface()
   {
   }
-
-  //virtual void setup( DebugInterface &debugLog ) = 0;
 
   virtual bool getString( WifiDebugOstream &log, std::string& string ) = 0;
   virtual std::streamsize write( const char_type* s, std::streamsize n ) = 0;

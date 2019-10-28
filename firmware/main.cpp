@@ -30,12 +30,13 @@ void setup() {
   auto timeNNTP  = std::make_shared<TimeESP8266>( debug );
   auto time      = std::make_shared<TimeManager>( timeNNTP );
   auto temp      = std::make_shared<TempDH11>( 0 );
-  auto sound     = std::make_shared<FS::SSound>( wifi, hardware, debug, time );
+  //auto sound     = std::make_shared<FS::SSound>( wifi, hardware, debug, time );
   auto datamover = std::make_shared<DataMover>( temp, wifi );
 
   action_manager = std::make_shared<ActionManager>( wifi, hardware, debug );
-  action_manager->addAction( sound );
+  //action_manager->addAction( sound );
   action_manager->addAction( time );
   action_manager->addAction( datamover );
+  action_manager->addAction( wifi );
 }
 

@@ -82,9 +82,16 @@ class WifiInterfaceEthernet: public NetInterface {
   std::streamsize write( const char_type* s, std::streamsize n ) override;
   void flush() override;
 
+  virtual unsigned int loop() override final;
+  virtual const char* debugName() override final 
+  {
+    return "WifiInterfaceEthernet";
+  }
+  
   private:
 
-  void handleNewConnections( WifiDebugOstream &log );
+  void handleNewConnections();
+  typedef std::array< WifiConnectionEthernet, 4 > ConnectionArray;
 
   // Make a CI Test to lock these defaults in?
   static constexpr const char* ssid = WifiSecrets::ssid; 
@@ -92,12 +99,13 @@ class WifiInterfaceEthernet: public NetInterface {
   static constexpr const char* hostname = WifiSecrets::hostname;
   const uint16_t tcp_port{4999};
 
-  WiFiServer m_server{tcp_port};
-  typedef std::array< WifiConnectionEthernet, 4 > ConnectionArray;
-  ConnectionArray m_connections;
+  std::shared_ptr<DebugInterface> log;
   int m_lastSlotAllocated;
   int m_kickout;
+  ConnectionArray m_connections;
   ConnectionArray::iterator m_nextToKick;
+
+  WiFiServer m_server{tcp_port};
 };
 
 #endif

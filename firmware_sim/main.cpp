@@ -66,6 +66,10 @@ class NetInterfaceSim: public NetInterface {
   void flush() override
   {
   }
+  virtual const char* debugName() override final { return "NetInterfaceSim"; }
+  virtual unsigned int loop() override final {
+    return 5000000;
+  }
 };
 
 class HWISim: public HWI

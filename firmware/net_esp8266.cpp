@@ -4,19 +4,18 @@
 #include "wifi_debug_ostream.h"
 
 WifiInterfaceEthernet::WifiInterfaceEthernet(
-  std::shared_ptr<DebugInterface> debugLog
+  std::shared_ptr<DebugInterface> logArg
 ) 
-  : m_lastSlotAllocated{0}, 
+  : log{ logArg },
+    m_lastSlotAllocated{0}, 
     m_kickout{0}, 
     m_nextToKick{m_connections.begin()}
 {
-  DebugInterface& log = *debugLog;
-
   delay(10);
-  log << "Init Wifi\n";
+  (*log) << "Init Wifi\n";
 
   // Connect to WiFi network
-  log << "Connecting to " << ssid << "\n";
+  (*log) << "Connecting to " << ssid << "\n";
 
   // Disable Wifi Persistence.  It's not needed and wears the flash memory.
   // Kudos Erik H. Bakke for pointing this point.
@@ -27,21 +26,21 @@ WifiInterfaceEthernet::WifiInterfaceEthernet(
    
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    log << ".";
+    (*log) << ".";
   }
-  log << "\n";
-  log << "WiFi Connected\n";
+  (*log) << "\n";
+  (*log) << "WiFi Connected\n";
    
   // Start the server
   m_server.begin();
-  log << "Server started\n";
+  (*log) << "Server started\n";
 
   // Print the IP address
   BeeFocus::IpAddress adr;
   auto dsIP = WiFi.localIP();
   for ( int i = 0; i < 4; ++ i )
     adr[i] = dsIP[i];
-  log << "Telnet to this address to connect: " << adr << " " << tcp_port << "\n";
+  (*log) << "Telnet to this address to connect: " << adr << " " << tcp_port << "\n";
 
   //wifi_set_sleep_type(LIGHT_SLEEP_T);
   reset();
@@ -49,18 +48,25 @@ WifiInterfaceEthernet::WifiInterfaceEthernet(
 
 bool WifiInterfaceEthernet::getString( WifiDebugOstream& log, std::string& string )
 {
-  handleNewConnections( log );
+  handleNewConnections();
   return std::any_of( m_connections.begin(), m_connections.end(), [&] ( NetConnection& connection )
   {
     return connection.getString( log, string );
   });
 }
 
-void WifiInterfaceEthernet::handleNewConnections( WifiDebugOstream &log )
+unsigned int WifiInterfaceEthernet::loop()
+{
+  handleNewConnections();
+  flush();
+  return 500000;
+} 
+
+void WifiInterfaceEthernet::handleNewConnections()
 {
   if ( m_server.hasClient() )
   {  
-    log << "New client connecting\n";
+    (*log) << "New client connecting\n";
    
     ConnectionArray::iterator slot = 
       std::find_if( m_connections.begin(), m_connections.end(), [&] ( NetConnection& connection )
@@ -75,11 +81,11 @@ void WifiInterfaceEthernet::handleNewConnections( WifiDebugOstream &log )
       m_nextToKick = ( m_nextToKick == m_connections.end()) ? m_connections.begin() : m_nextToKick;
     }
     
-    log << "Using slot " << slot - m_connections.begin() << " of " << m_connections.size()-1 << " for the new client\n";
+    (*log) << "Using slot " << slot - m_connections.begin() << " of " << m_connections.size()-1 << " for the new client\n";
 
     if ( *slot )
     {
-      log << "An existing client exists - disconnecting it\n";
+      (*log) << "An existing client exists - disconnecting it\n";
     }
 
     slot->initConnection( m_server );
