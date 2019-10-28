@@ -139,6 +139,7 @@ void SSound::doAbort( CommandParser::CommandPacket cp )
 
 void SSound::doHReset( CommandParser::CommandPacket cp )
 {
+  (void) cp;
   samples.reset();
 }
 
@@ -173,7 +174,7 @@ void SSound::doStatus( CommandParser::CommandPacket cp )
     const char *num_padding = ( i < 10 ) ? "   " : i == 100 ? " " : "  ";
     const char *total_padding = ( total < 10 ) ? "  " : total == 100 ? "" : " ";
     *net << count << count_padding << i << num_padding << total << total_padding << " -> ";
-    for ( int c = 0; c < i; ++c ) {
+    for ( unsigned c = 0; c < i; ++c ) {
       *net << "x";
     }
     *net << "\n";

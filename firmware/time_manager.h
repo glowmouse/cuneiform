@@ -24,13 +24,14 @@ class TimeManager: public TimeInterface, public ActionInterface {
 
   private:
 
+  std::shared_ptr<TimeInterface> baseInterface;
   bool timeQueried;
+
   unsigned int timeQueriedAt;
   unsigned int queryTime;
 
   void baseInterfaceCheckForTimeSync( unsigned int msSinceDevStart );
 
-  std::shared_ptr<TimeInterface> baseInterface;
 };
 
 void intTimeToString( std::string& outString, unsigned int secondsSince1970 );

@@ -1,7 +1,7 @@
 #ifndef __TEMP_INTERFACE_H__
 #define __TEMP_INTERFACE_H__
 
-class TemperatureInterface {
+class TempInterface {
   public:
 
   virtual float readTemperature() = 0;
