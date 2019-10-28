@@ -2,6 +2,7 @@
 #define __NetInterface_H__
 
 #include <string>
+#include <memory>
 #include "hardware_interface.h"
 #include "debug_interface.h"
 
@@ -25,7 +26,7 @@ class NetInterface {
   {
   }
 
-  virtual void setup( DebugInterface &debugLog ) = 0;
+  //virtual void setup( DebugInterface &debugLog ) = 0;
 
   virtual bool getString( WifiDebugOstream &log, std::string& string ) = 0;
   virtual std::streamsize write( const char_type* s, std::streamsize n ) = 0;

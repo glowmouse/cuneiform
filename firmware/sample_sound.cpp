@@ -28,7 +28,7 @@ SSound::SSound(
   
   // Bring up the interface to the controlling computer
 
-  net->setup( dlog );
+  //net->setup( dlog );
   WifiDebugOstream log( debugLog.get(), net.get() );
 
   //hardware->PinMode(HWI::Pin::STEP,       HWI::PinIOMode::M_OUTPUT );  

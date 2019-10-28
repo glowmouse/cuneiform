@@ -2,6 +2,7 @@
 #define __WifiInterfaceEthernet_H__
 
 #include <string>
+#include <memory>
 #include <ios>
 #include <ESP8266WiFi.h>
 #include "wifi_ostream.h"
@@ -68,17 +69,14 @@ class WifiConnectionEthernet: public NetConnection {
 class WifiInterfaceEthernet: public NetInterface {
   public:
 
-  WifiInterfaceEthernet() : m_lastSlotAllocated{0}, m_kickout{0}, m_nextToKick{m_connections.begin()}
-  {
-    reset();
-  }
+  WifiInterfaceEthernet( std::shared_ptr<DebugInterface> debugLog );
+
   ~WifiInterfaceEthernet()
   {
     reset();
   }
 
   void reset( void );
-  void setup( DebugInterface& debugLog ) override;
 
   bool getString( WifiDebugOstream &log, std::string& string ) override;
   std::streamsize write( const char_type* s, std::streamsize n ) override;

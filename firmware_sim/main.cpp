@@ -34,9 +34,9 @@ class NetInterfaceSim: public NetInterface {
   struct category: virtual beefocus_tag {};
   using char_type = char;
 
-  void setup( DebugInterface& debugLog ) override
+  NetInterfaceSim( std::shared_ptr<DebugInterface> debugLog )
   {
-    debugLog << "Simulator Net Interface Init\n";
+    (*debugLog) << "Simulator Net Interface Init\n";
   }
   bool getString( WifiDebugOstream& log, std::string& input ) override
   {
@@ -120,9 +120,9 @@ unsigned int loop() {
 }
 
 void setup() {
-  auto wifi      = std::make_shared<NetInterfaceSim>();
-  auto hardware  = std::make_shared<HWISim>();
   auto debug     = std::make_shared<DebugInterfaceSim>();
+  auto wifi      = std::make_shared<NetInterfaceSim>( debug );
+  auto hardware  = std::make_shared<HWISim>();
   auto timeSim   = std::make_shared<TimeInterfaceSim>();
   auto time      = std::make_shared<TimeManager>( timeSim );
 
