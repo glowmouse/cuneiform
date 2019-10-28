@@ -85,7 +85,7 @@ class NetMockSimpleTimed: public NetInterface
   ///                            if there's any input
   /// @return     true if there's input, false otherwise.
   ///
-  bool getString( WifiDebugOstream& log, std::string& returnString ) override
+  bool getString( std::string& returnString ) override
   {
     // Set the string to a default.
     returnString = "";

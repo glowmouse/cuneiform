@@ -42,7 +42,7 @@ class WifiConnectionEthernet: public NetConnection {
   }
 
   void initConnection( WiFiServer &server );
-  bool getString( WifiDebugOstream &log, std::string& string ) override;
+  bool getString( std::string& string ) override;
   operator bool( void ) override {
     return m_connectedClient;
   }
@@ -52,7 +52,7 @@ class WifiConnectionEthernet: public NetConnection {
 
   private:
 
-  void handleNewIncomingData( WifiDebugOstream& log );    
+  void handleNewIncomingData();    
 
   int m_currentIncomingBuffer;
   std::string m_incomingBuffers[2];
@@ -78,7 +78,7 @@ class WifiInterfaceEthernet: public NetInterface {
 
   void reset( void );
 
-  bool getString( WifiDebugOstream &log, std::string& string ) override;
+  bool getString( std::string& string ) override;
   std::streamsize write( const char_type* s, std::streamsize n ) override;
   void flush() override;
 

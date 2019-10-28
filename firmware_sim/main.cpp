@@ -38,7 +38,7 @@ class NetInterfaceSim: public NetInterface {
   {
     (*debugLog) << "Simulator Net Interface Init\n";
   }
-  bool getString( WifiDebugOstream& log, std::string& input ) override
+  bool getString( std::string& input ) override
   {
     fd_set readfds;
     FD_ZERO(&readfds);

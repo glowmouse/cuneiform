@@ -74,7 +74,7 @@ const CommandPacket checkForCommands(
   // Read the first line of the request.  
 
   static std::string command;
-  bool dataReady = wifi.getString( log, command );
+  bool dataReady = wifi.getString( command );
   if ( !dataReady )
   {
     return result;

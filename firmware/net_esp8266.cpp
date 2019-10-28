@@ -46,12 +46,12 @@ WifiInterfaceEthernet::WifiInterfaceEthernet(
   reset();
 }
 
-bool WifiInterfaceEthernet::getString( WifiDebugOstream& log, std::string& string )
+bool WifiInterfaceEthernet::getString( std::string& string )
 {
   handleNewConnections();
   return std::any_of( m_connections.begin(), m_connections.end(), [&] ( NetConnection& connection )
   {
-    return connection.getString( log, string );
+    return connection.getString( string );
   });
 }
 
@@ -129,15 +129,14 @@ void WifiConnectionEthernet::initConnection( WiFiServer &server )
   (*this) << "# Cuneiform data logger is ready for commands\n"; 
 }
 
-bool WifiConnectionEthernet::getString( WifiDebugOstream &log, std::string& string )
+bool WifiConnectionEthernet::getString( std::string& string )
 {
-  handleNewIncomingData( log );
+  handleNewIncomingData();
 
   std::string& incomingBuffer = m_incomingBuffers[ m_currentIncomingBuffer ];
   size_t newLine = incomingBuffer.find('\n');
   if ( newLine != std::string::npos )
   {
-    // log << "Found newline at " << newLine << "\n";
     string.replace( 0, newLine, incomingBuffer );
     string.resize( newLine );
     m_currentIncomingBuffer = 1-m_currentIncomingBuffer;
@@ -153,9 +152,8 @@ bool WifiConnectionEthernet::getString( WifiDebugOstream &log, std::string& stri
 }
 
 
-void WifiConnectionEthernet::handleNewIncomingData( WifiDebugOstream& log )
+void WifiConnectionEthernet::handleNewIncomingData()
 {
-  (void) log; // silence argsused warning
   std::string& incomingBuffer = m_incomingBuffers[ m_currentIncomingBuffer ];
   
   if ( !m_connectedClient || !m_connectedClient.available())
