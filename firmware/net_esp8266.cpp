@@ -117,6 +117,18 @@ void WifiInterfaceEthernet::reset(void)
   });
 }
 
+std::unique_ptr<NetConnection> 
+WifiInterfaceEthernet::connect( const std::string& location, unsigned int port )
+{
+  // TODO - actually implement.
+  std::unique_ptr<WifiConnectionEthernet> con = 
+      std::unique_ptr<WifiConnectionEthernet>( new WifiConnectionEthernet );
+
+  return std::move(con);
+}
+
+// ==========================================================================
+
 void WifiConnectionEthernet::initConnection( WiFiServer &server )
 {
   if ( m_connectedClient )

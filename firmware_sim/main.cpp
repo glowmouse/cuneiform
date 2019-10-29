@@ -15,16 +15,39 @@ std::shared_ptr<ActionManager> action_manager;
 class TimeInterfaceSim: public TimeInterface {
   public:
  
-  virtual unsigned int secondsSince1970() override final {
+  unsigned int secondsSince1970() override {
     return time(nullptr);
   } 
 
-  virtual unsigned int msSinceDeviceStart() override final {
+  unsigned int msSinceDeviceStart() override {
     timespec t;
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t );
     const unsigned int msFromS  = t.tv_sec * 1000;
     const unsigned int msFromNs = t.tv_nsec / 1000000;
     return msFromS + msFromNs; 
+  }
+};
+
+class NetConnectionSim: public NetConnection {
+  bool getString( std::string& string ) {
+    string = "";
+    return true;
+  }
+  operator bool(void) {
+    return true;
+  }
+  void reset(void )
+  {
+  }
+  std::streamsize write( const char_type* s, std::streamsize n )
+  {
+    for ( std::streamsize i = 0; i < n; ++i ) {
+      std::cout << s[i];
+    }
+    return n;
+  }
+  void flush()
+  {
   }
 };
 
@@ -66,9 +89,13 @@ class NetInterfaceSim: public NetInterface {
   void flush() override
   {
   }
-  virtual const char* debugName() override final { return "NetInterfaceSim"; }
-  virtual unsigned int loop() override final {
+  const char* debugName() override { return "NetInterfaceSim"; }
+  unsigned int loop() override {
     return 5000000;
+  }
+  std::unique_ptr<NetConnection> connect( const std::string& location, unsigned int port ) override
+  {
+    return std::unique_ptr<NetConnection>(new NetConnectionSim());  
   }
 };
 

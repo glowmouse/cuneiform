@@ -8,6 +8,33 @@
 #include "net_interface.h"
 #include "test_mock_event.h"
 
+/// @brief Dummy mock for net connectins
+///
+/// Fill in if needed for unit tests.
+///
+class NetMockSimpleConnection: public NetConnection
+{
+  public:
+
+  bool getString( std::string& string ) {
+    string = "";
+    return true;
+  }
+  operator bool(void ) {
+    return true;
+  }
+  void reset(void ) 
+  {
+  }
+  std::streamsize write( const char_type* s, std::streamsize n )
+  {
+    return n;
+  }
+  void flush()
+  {
+  }
+};
+
 ///
 /// @brief Testing Mock for network events
 /// 
@@ -186,6 +213,11 @@ class NetMockSimpleTimed: public NetInterface
   const TimedStringEvents& getOutput() 
   {
     return outputEvents;
+  }
+
+  std::unique_ptr<NetConnection> connect( const std::string& location, unsigned int port ) override
+  {
+    return std::unique_ptr<NetConnection>(new NetMockSimpleConnection());
   }
 
   private:

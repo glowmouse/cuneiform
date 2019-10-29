@@ -82,11 +82,12 @@ class WifiInterfaceEthernet: public NetInterface {
   std::streamsize write( const char_type* s, std::streamsize n ) override;
   void flush() override;
 
-  virtual unsigned int loop() override final;
-  virtual const char* debugName() override final 
+  unsigned int loop() override;
+  const char* debugName() override
   {
     return "WifiInterfaceEthernet";
   }
+  std::unique_ptr<NetConnection> connect( const std::string& location, unsigned int port );
   
   private:
 
