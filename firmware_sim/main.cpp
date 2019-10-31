@@ -3,7 +3,10 @@
 #include <memory>
 #include <unistd.h>
 #include <time.h>
+#include <math.h>   // for adding variation to simulated temperature.
 
+#include "temperature_interface.h"
+#include "data_mover.h"
 #include "sample_sound.h"
 #include "hardware_interface.h"
 #include "action_manager.h"
@@ -130,6 +133,20 @@ class HWISim: public HWI
   }
 };
 
+class TempSim: public TempInterface {
+  public:
+  float readTemperature() override
+  {
+    static float angle = 0.0f;
+    angle += .5;
+    return 20.0 + sin( angle );
+  }
+  float readHumidity() override
+  {
+    return 50.0f;
+  }
+};
+
 class DebugInterfaceSim: public DebugInterface
 {
   struct category: virtual beefocus_tag {};
@@ -156,11 +173,15 @@ void setup() {
   auto hardware  = std::make_shared<HWISim>();
   auto timeSim   = std::make_shared<TimeInterfaceSim>();
   auto time      = std::make_shared<TimeManager>( timeSim );
+  auto temp      = std::make_shared<TempSim>();
+  //auto sound     = std::make_shared<FS::SSound>( wifi, hardware, debug, time );
+  auto datamover = std::make_shared<DataMover>( "sim", temp, wifi );
 
-  auto sound     = std::make_shared<FS::SSound>( wifi, hardware, debug, time );
   action_manager = std::make_shared<ActionManager>( wifi, hardware, debug );
-  action_manager->addAction( sound );
+  //action_manager->addAction( sound );
   action_manager->addAction( time );
+  action_manager->addAction( datamover );
+  action_manager->addAction( wifi );
 }
 
 int main(int argc, char* argv[])

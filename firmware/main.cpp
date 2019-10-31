@@ -9,6 +9,7 @@
 #include "time_manager.h"
 #include "temperature_dh11.h"
 #include "data_mover.h"
+#include "wifi_secrets.h"
 
 std::shared_ptr<ActionManager> action_manager;
 
@@ -31,7 +32,7 @@ void setup() {
   auto time      = std::make_shared<TimeManager>( timeNNTP );
   auto temp      = std::make_shared<TempDH11>( 0 );
   //auto sound     = std::make_shared<FS::SSound>( wifi, hardware, debug, time );
-  auto datamover = std::make_shared<DataMover>( temp, wifi );
+  auto datamover = std::make_shared<DataMover>( WifiSecrets::hostname, temp, wifi );
 
   action_manager = std::make_shared<ActionManager>( wifi, hardware, debug );
   //action_manager->addAction( sound );
